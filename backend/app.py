@@ -4,7 +4,6 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-import pymysql
 import traceback
 
 import pandas as pd
@@ -152,10 +151,6 @@ selector = model_bundle['selector']
 kmeans = model_bundle['kmeans']
 log_transform_applied = model_bundle['log_transform_applied']
 selected_features = model_bundle['selected_features']
-
-# Baca mapping daerah dari CSV sekali saat server dimulai
-# mapping_df = pd.read_csv("mapping_daerah.csv")
-# mapping_daerah = dict(zip(mapping_df["Daerah"], mapping_df["Kode"]))
 
 # Gunakan mapping dari file koordinat saja (sudah lengkap)
 mapping_df = pd.read_csv("mapping_daerah_koordinat.csv")
@@ -423,28 +418,6 @@ def update_profil():
         print("[FATAL] Terjadi error saat update profil:")
         traceback.print_exc()
         return jsonify({'error': f'Gagal menyimpan perubahan. {str(e)}'}), 500
-
-# @app.route('/userProfil', methods=['GET'])
-# @jwt_required()
-# def get_profil():
-    user_id = request.args.get('id')
-    if not user_id:
-        return jsonify({'error': 'ID pengguna tidak ditemukan'}), 400
-
-    cursor = mysql.connection.cursor()
-    cursor.execute("SELECT nama, email, password FROM user WHERE id = %s", (user_id,))
-    user = cursor.fetchone()
-    cursor.close()
-
-    if user:
-        return jsonify({
-            'nama': user[0],
-            'email': user[1],
-            'password': user[2],
-        }), 200
-    else:
-        return jsonify({'error': 'Pengguna tidak ditemukan'}), 404
-
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000, debug=True)
